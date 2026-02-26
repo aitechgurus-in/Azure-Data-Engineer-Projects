@@ -1,5 +1,4 @@
 environment         = "dev"
-location            = "northcentralus"
+location            = "eastus2"
 storage_replication = "LRS"
-sql_sku             = "GP_S_Gen5_1"
-sql_admin_password  = "AzureTrial123!"
+project_name        = "nextgen"
