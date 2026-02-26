@@ -4,18 +4,29 @@ provider "azurerm" {
   features {}
 }
 
+# The random provider helps generate unique names to avoid "AccountAlreadyTaken" errors
+resource "random_id" "unique_suffix" {
+  byte_length = 4
+}
+
 locals {
-  name_suffix = "${var.project_name}-${var.environment}"
+  # creates a clean string like "nextgendev4a2b"
+  clean_project_name = replace("${var.project_name}${var.environment}", "-", "")
+  unique_name        = "${local.clean_project_name}${random_id.unique_suffix.hex}"
+  
+  # Used for display names that allow hyphens
+  display_suffix     = "${var.project_name}-${var.environment}-${random_id.unique_suffix.hex}"
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-${local.name_suffix}"
+  name     = "rg-${var.project_name}-${var.environment}"
   location = var.location
 }
 
-# ADLS Gen2 Storage
+# --- ADLS Gen2 Storage ---
+# Names must be 3-24 chars, lowercase letters and numbers only
 resource "azurerm_storage_account" "st" {
-  name                     = "st${replace(local.name_suffix, "-", "")}"
+  name                     = substr("st${local.unique_name}", 0, 24)
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
@@ -29,9 +40,10 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "layers" {
   storage_account_id = azurerm_storage_account.st.id
 }
 
-# SQL Serverless Source
+# --- SQL Serverless Source ---
+# SQL Server names must also be globally unique
 resource "azurerm_mssql_server" "sql" {
-  name                         = "sql-src-${local.name_suffix}"
+  name                         = "sql-src-${local.unique_name}"
   resource_group_name          = azurerm_resource_group.rg.name
   location                     = azurerm_resource_group.rg.location
   version                      = "12.0"
@@ -48,24 +60,28 @@ resource "azurerm_mssql_database" "db" {
   min_capacity                = 0.5
 }
 
-# Databricks
+# --- Databricks ---
 resource "azurerm_databricks_workspace" "dbx" {
-  name                = "dbx-${local.name_suffix}"
+  name                = "dbx-${local.display_suffix}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   sku                 = "premium"
 }
 
-# --- AZURE AI LANGUAGE SERVICE (Instant Access) ---
+# --- AZURE AI LANGUAGE SERVICE ---
 resource "azurerm_cognitive_account" "language_svc" {
-  name                = "aisvc-${local.name_suffix}"
+  name                = "aisvc-${local.unique_name}"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   kind                = "TextAnalytics" 
-  sku_name            = "S" # Standard tier
+  sku_name            = "S" 
 }
 
 # --- OUTPUTS ---
+output "storage_account_name" {
+  value = azurerm_storage_account.st.name
+}
+
 output "ai_endpoint" {
   value = azurerm_cognitive_account.language_svc.endpoint
 }
