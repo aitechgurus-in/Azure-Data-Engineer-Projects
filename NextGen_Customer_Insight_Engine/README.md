@@ -102,7 +102,7 @@ The final enriched dataset is stored as a **Delta Table** with **Change Data Fee
 ```bash
 cd infrastructure
 terraform init
-terraform apply -var="environment=dev"
+terraform apply -var-file="dev.tfvars"
 ```
 
 ### 3. Database Setup
