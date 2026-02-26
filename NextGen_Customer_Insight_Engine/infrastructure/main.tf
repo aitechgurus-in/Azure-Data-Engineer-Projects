@@ -1,4 +1,8 @@
-provider "azurerm" { features {} }
+# infrastructure/main.tf
+
+provider "azurerm" {
+  features {}
+}
 
 locals {
   name_suffix = "${var.project_name}-${var.environment}"
@@ -39,6 +43,7 @@ resource "azurerm_mssql_database" "db" {
   name      = "sqldb-metadata"
   server_id = azurerm_mssql_server.sql.id
   sku_name  = var.sql_sku
+  
   auto_pause_delay_in_minutes = 60
   min_capacity                = 0.5
 }
@@ -62,10 +67,15 @@ resource "azurerm_cognitive_account" "openai" {
 resource "azurerm_cognitive_deployment" "gpt" {
   name                 = var.openai_model_name
   cognitive_account_id = azurerm_cognitive_account.openai.id
+  
   model {
-    format = "OpenAI"
-    name   = var.openai_model_name
+    format  = "OpenAI"
+    name    = var.openai_model_name
     version = "2024-07-18"
   }
-  sku { name = "Standard"; capacity = 10 }
+
+  sku {
+    name     = "Standard"
+    capacity = 10
+  }
 }
