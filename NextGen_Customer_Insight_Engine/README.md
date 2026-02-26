@@ -23,21 +23,20 @@ graph LR
 
 ```text
 NextGen_Customer_Insight_Engine/
-├── README.md                   # Project Documentation
+├── README.md                   # Master project guide
 ├── infrastructure/             # Infrastructure as Code (IaC)
-│   ├── main.tf                 # Resources: ADLS, SQL, Databricks, OpenAI
-│   └── variables.tf            # var file
-│   └── dev.tfvars              # Dev vars
-│   └── prod.tfvars             # Prod vars
-│   └── outputs.tf
-├── databricks/                 # Data Processing (PySpark)
-│   ├── 01_bronze_to_silver.py  # PII Masking & Schema Cleanup
-│   └── 02_silver_to_gold_ai.py # GenAI Enrichment (Batch Processing)
-├── data/                       # Mock Samples & Schemas
-│   ├── source_db_setup.sql     # SQL DDL for Source Database
-│   └── sample_chats.json       # Mock JSON for Landing Zone
-└── adf/                        # Orchestration Metadata
-    └── pipeline_logic.md       # Description of ADF Pipeline activities
+│   ├── main.tf                 # Resources (ADLS, SQL, DBX, OpenAI)
+│   ├── variables.tf            # Variable definitions
+│   ├── dev.tfvars              # Values for Trial/Dev (Low Cost)
+│   └── prod.tfvars             # Values for Production (Scalable)
+├── databricks/                 # Spark Processing Logic
+│   ├── 01_bronze_to_silver.py  # PII Masking & Data Cleaning
+│   └── 02_silver_to_gold_ai.py # GenAI Enrichment (Pandas UDF)
+├── data/                       # Source Setup
+│   ├── source_db_setup.sql     # SQL Table Schema
+│   └── sample_chats.json       # Mock chat data
+└── adf/                        # Orchestration
+    └── workflow_config.md      # Logic for ADF Pipelines
 ```
 
 ---
@@ -63,24 +62,78 @@ NextGen_Customer_Insight_Engine/
 
 ---
 
-## 🏗️ Phase-by-Phase Implementation
 
-### Phase 1: Infrastructure as Code (IaC)
-Used **Terraform** to provision the entire cloud footprint. 
-- Integrated **Environment Variables** to switch between `dev` (LRS Storage) and `prod` (GRS Storage).
-- Configured **RBAC** so Databricks can access ADLS Gen2 without using account keys.
+## 🚀 Phase-by-Phase Implementation Instructions: How to Complete the POC
 
-### Phase 2: Ingestion & Medallion Workflow
-- **Bronze:** ADF triggers a copy activity from the **Azure SQL Source** and **Blob Storage** into raw Delta tables.
-- **Silver:** PySpark cleans the data, enforces schemas, and applies **PII masking** regex patterns.
-- **Gold:** The GenAI enrichment phase. Using a **Batch-Inference** pattern, the pipeline calls Azure OpenAI to extract:
-    - Sentiment Score (1-10)
-    - Root Cause Category (Technical, Billing, Sales)
-    - Executive Summary (1 Sentence)
+Follow these steps to deploy the end-to-end pipeline on an Azure Trial account.
 
-### Phase 3: Analytical Serving
-The final enriched dataset is stored as a **Delta Table** with **Change Data Feed (CDF)** enabled. This allows downstream systems or PowerBI to subscribe only to the new AI-generated insights.
+### Step 1: Prerequisites & Local Setup
+1.  **Azure Subscription:** Ensure you have an active Azure account (Trial credits work perfectly).
+2.  **Terraform:** Install Terraform on your local machine.
+3.  **Azure OpenAI Access:** Ensure your subscription has access to Azure OpenAI.
+    *   *Interview Tip:* If access is pending, mention that you have the logic ready for "Azure AI Language Service" as a fallback.
+4.  **Clone Repo:**
+    ```bash
+    git clone https://github.com/your-username/Azure-Data-Engineer-Projects.git
+    cd NextGen_Customer_Insight_Engine
+    ```
 
+### Step 2: Deploy Infrastructure (IaC)
+1.  Navigate to the infrastructure folder: `cd infrastructure`
+2.  Initialize Terraform: `terraform init`
+3.  Deploy the Resources:
+    ```bash
+    terraform apply -var-file="dev.tfvars"
+    ```
+    *This will provision ADLS Gen2, Azure SQL Serverless, Databricks, and the OpenAI GPT-4o-mini model.*
+
+### Step 3: Seed Source Data
+1.  **Azure SQL:**
+    - Navigate to the **Azure SQL Database** in the portal.
+    - Open the **Query Editor** and execute the script found in `/data/source_db_setup.sql`.
+2.  **Landing Zone:**
+    - Go to your Storage Account -> Containers -> `external-source`.
+    - Upload the `/data/sample_chats.json` file.
+
+### Step 4: Configure Databricks Secrets
+To ensure security, we avoid hardcoding API keys in notebooks.
+1.  Generate an **Azure OpenAI API Key** from the portal.
+2.  In Databricks, create a **Secret Scope** named `nextgen-scope`.
+3.  Add the secret:
+    ```bash
+    # Using Databricks CLI
+    databricks secrets put --scope nextgen-scope --key openai-key
+    ```
+    *Interview Tip: Explain how this integration with Azure Key Vault prevents sensitive data leakage.*
+
+### Step 5: Orchestrate via Azure Data Factory
+1.  **Linked Services:** Create Linked Services for:
+    - **Azure SQL Database** (Source Metadata).
+    - **ADLS Gen2** (Data Lake layers).
+    - **Azure Databricks** (Compute).
+2.  **Pipeline Construction:**
+    - **Activity 1 (Copy):** Ingest `SupportTickets` from SQL to `bronze/tickets`.
+    - **Activity 2 (Copy):** Ingest `sample_chats.json` from `external-source` to `bronze/chats`.
+    - **Activity 3 (Notebook):** Execute `01_bronze_to_silver.py`.
+    - **Activity 4 (Notebook):** Execute `02_silver_to_gold_ai.py`.
+3.  **Trigger:** Click **Debug** to run the full end-to-end flow.
+
+### Step 6: Validate & Analytics
+1.  Navigate to the `gold` container in ADLS Gen2.
+2.  Verify the `customer_insights` Delta table exists.
+3.  Open the Databricks SQL Editor and run:
+    ```sql
+    SELECT * FROM delta.`abfss://gold@stnextgendev.dfs.core.windows.net/customer_insights`
+    WHERE ai_insight LIKE '%High%'
+    ```
+    *This confirms that the "Agentic" logic correctly identified high-priority customer issues.*
+
+---
+
+## 🧹 Cleanup
+To avoid consuming your $200 trial credits after testing:
+```bash
+terraform destroy -var-file="dev.tfvars"
 ---
 
 ## 📈 Business Impact (POC Results)
@@ -91,25 +144,3 @@ The final enriched dataset is stored as a **Delta Table** with **Change Data Fee
 
 ---
 
-## 🚀 How to Run
-
-### 1. Prerequisites
-- Azure Subscription (Trial works).
-- Terraform installed locally.
-- Access to Azure OpenAI (GPT-4o-mini deployment).
-
-### 2. Infrastructure Deployment
-```bash
-cd infrastructure
-terraform init
-terraform apply -var-file="dev.tfvars"
-```
-
-### 3. Database Setup
-- Open the Azure SQL Database Query Editor.
-- Execute the script found in /data/source_db_setup.sql to populate the mock metadata.
-
-### 4. Pipeline Execution
-- Open Azure Data Factory.
-- Trigger the pipeline named PL_Main_Ingestion.
-- Monitor the Databricks Job linked to the pipeline to see the GenAI enrichment in action.
