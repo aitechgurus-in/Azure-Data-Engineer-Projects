@@ -4,18 +4,14 @@ provider "azurerm" {
   features {}
 }
 
-# The random provider helps generate unique names to avoid "AccountAlreadyTaken" errors
+# 1. Generate a random suffix to ensure global uniqueness
 resource "random_id" "unique_suffix" {
   byte_length = 4
 }
 
 locals {
-  # creates a clean string like "nextgendev4a2b"
-  clean_project_name = replace("${var.project_name}${var.environment}", "-", "")
-  unique_name        = "${local.clean_project_name}${random_id.unique_suffix.hex}"
-  
-  # Used for display names that allow hyphens
-  display_suffix     = "${var.project_name}-${var.environment}-${random_id.unique_suffix.hex}"
+  # Names must be lowercase and alphanumeric for storage
+  unique_string = "${var.project_name}${var.environment}${random_id.unique_suffix.hex}"
 }
 
 resource "azurerm_resource_group" "rg" {
@@ -23,10 +19,9 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
 }
 
-# --- ADLS Gen2 Storage ---
-# Names must be 3-24 chars, lowercase letters and numbers only
+# 2. ADLS Gen2 Storage (Using unique suffix)
 resource "azurerm_storage_account" "st" {
-  name                     = substr("st${local.unique_name}", 0, 24)
+  name                     = substr("st${local.unique_string}", 0, 24)
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
@@ -40,10 +35,9 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "layers" {
   storage_account_id = azurerm_storage_account.st.id
 }
 
-# --- SQL Serverless Source ---
-# SQL Server names must also be globally unique
+# 3. SQL Server (Using unique suffix to avoid name conflicts)
 resource "azurerm_mssql_server" "sql" {
-  name                         = "sql-src-${local.unique_name}"
+  name                         = "sql-src-${local.unique_string}"
   resource_group_name          = azurerm_resource_group.rg.name
   location                     = azurerm_resource_group.rg.location
   version                      = "12.0"
@@ -60,24 +54,24 @@ resource "azurerm_mssql_database" "db" {
   min_capacity                = 0.5
 }
 
-# --- Databricks ---
+# 4. Databricks
 resource "azurerm_databricks_workspace" "dbx" {
-  name                = "dbx-${local.display_suffix}"
+  name                = "dbx-${var.project_name}-${var.environment}-${random_id.unique_suffix.hex}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   sku                 = "premium"
 }
 
-# --- AZURE AI LANGUAGE SERVICE ---
+# 5. Azure AI Language Service
 resource "azurerm_cognitive_account" "language_svc" {
-  name                = "aisvc-${local.unique_name}"
-  location            = var.location
+  name                = "aisvc-${local.unique_string}"
+  location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   kind                = "TextAnalytics" 
   sku_name            = "S" 
 }
 
-# --- OUTPUTS ---
+# --- OUTPUTS (Crucial for your notebooks) ---
 output "storage_account_name" {
   value = azurerm_storage_account.st.name
 }
