@@ -19,12 +19,23 @@ graph LR
 ```
 
 
-# NextGen Customer Insight Engine: GenAI Data Pipeline 🚀
+## 📁 Directory Structure
 
-## 📖 Project Overview
-This project is an end-to-end **Azure Data Engineering & GenAI POC** designed to solve a major enterprise challenge: extracting structured business value from millions of unstructured customer interactions.
-
-Traditionally, customer chat logs are "dark data"—hard to analyze at scale. This pipeline automates the ingestion, PII masking, and AI-driven enrichment of these logs to identify technical issues, sentiment, and churn risks in real-time.
+```text
+NextGen_Customer_Insight_Engine/
+├── README.md                   # Project Documentation
+├── infrastructure/             # Infrastructure as Code (IaC)
+│   ├── main.tf                 # Resources: ADLS, SQL, Databricks, OpenAI
+│   └── variables.tf            # Dev/Prod toggle & credentials
+├── databricks/                 # Data Processing (PySpark)
+│   ├── 01_bronze_to_silver.py  # PII Masking & Schema Cleanup
+│   └── 02_silver_to_gold_ai.py # GenAI Enrichment (Batch Processing)
+├── data/                       # Mock Samples & Schemas
+│   ├── source_db_setup.sql     # SQL DDL for Source Database
+│   └── sample_chats.json       # Mock JSON for Landing Zone
+└── adf/                        # Orchestration Metadata
+    └── pipeline_logic.md       # Description of ADF Pipeline activities
+```
 
 ---
 
