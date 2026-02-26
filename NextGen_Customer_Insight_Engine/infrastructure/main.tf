@@ -9,13 +9,13 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
 }
 
-# --- STORAGE (ADLS Gen2) ---
+# ADLS Gen2 Storage
 resource "azurerm_storage_account" "st" {
   name                     = "st${replace(local.name_suffix, "-", "")}"
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
-  account_replication_type = var.storage_replication # Varies by env
+  account_replication_type = var.storage_replication
   is_hns_enabled           = true
 }
 
@@ -25,7 +25,7 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "layers" {
   storage_account_id = azurerm_storage_account.st.id
 }
 
-# --- SOURCE SQL DATABASE ---
+# SQL Serverless Source
 resource "azurerm_mssql_server" "sql" {
   name                         = "sql-src-${local.name_suffix}"
   resource_group_name          = azurerm_resource_group.rg.name
@@ -38,14 +38,12 @@ resource "azurerm_mssql_server" "sql" {
 resource "azurerm_mssql_database" "db" {
   name      = "sqldb-metadata"
   server_id = azurerm_mssql_server.sql.id
-  sku_name  = var.sql_sku # Serverless for dev, Provisioned for prod
-  
-  # Only enable auto-pause if it's serverless
-  auto_pause_delay_in_minutes = strcontains(var.sql_sku, "_S_") ? 60 : null
-  min_capacity                = strcontains(var.sql_sku, "_S_") ? 0.5 : null
+  sku_name  = var.sql_sku
+  auto_pause_delay_in_minutes = 60
+  min_capacity                = 0.5
 }
 
-# --- DATABRICKS & OPENAI ---
+# Databricks & OpenAI
 resource "azurerm_databricks_workspace" "dbx" {
   name                = "dbx-${local.name_suffix}"
   resource_group_name = azurerm_resource_group.rg.name
@@ -65,8 +63,8 @@ resource "azurerm_cognitive_deployment" "gpt" {
   name                 = var.openai_model_name
   cognitive_account_id = azurerm_cognitive_account.openai.id
   model {
-    format  = "OpenAI"
-    name    = var.openai_model_name
+    format = "OpenAI"
+    name   = var.openai_model_name
     version = "2024-07-18"
   }
   sku { name = "Standard"; capacity = 10 }
