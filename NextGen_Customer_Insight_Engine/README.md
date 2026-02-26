@@ -70,23 +70,30 @@ Follow these steps to deploy the end-to-end pipeline on an Azure Trial account.
 ### Step 1: Prerequisites & Local Setup
 1.  **Azure Subscription:** Ensure you have an active Azure account (Trial credits work perfectly).
 2.  **Terraform:** Install Terraform on your local machine.
-3.  **Azure OpenAI Access:** Ensure your subscription has access to Azure OpenAI.
-    *   *Interview Tip:* If access is pending, mention that you have the logic ready for "Azure AI Language Service" as a fallback.
+3.  **Azure OpenAI Access:** Ensure your subscription has access to Azure OpenAI. If access is pending, mention that you have the logic ready for "Azure AI Language Service" as a fallback.
 4.  **Clone Repo:**
     ```bash
-    git clone https://github.com/your-username/Azure-Data-Engineer-Projects.git
+    git clone https://github.com/aitechgurus-in/Azure-Data-Engineer-Projects.git
     cd NextGen_Customer_Insight_Engine
     ```
+5. To allow Terraform to provision resources on your Azure account, follow the **Azure CLI Authentication** method. This is the most secure way for local development as it avoids hardcoding sensitive credentials. If you do not have it installed, download the [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) for your operating system.
+
 
 ### Step 2: Deploy Infrastructure (IaC)
-1.  Navigate to the infrastructure folder: `cd infrastructure`
-2.  Initialize Terraform: `terraform init`
-3.  Deploy the Resources:
+1.  Open your terminal and run the following command. A browser window will open for you to log in with your Microsoft account:
+    ```bash
+    az login
+    ```
+2.  Navigate to the infrastructure folder: `cd infrastructure`
+3.  Initialize Terraform: `terraform init`
+4.  Deploy the Resources:
     ```bash
     terraform apply -var-file="dev.tfvars"
     ```
-    *This will provision ADLS Gen2, Azure SQL Serverless, Databricks, and the OpenAI GPT-4o-mini model.*
+*Note: This will provision ADLS Gen2, Azure SQL Serverless, Databricks, and the OpenAI GPT-4o-mini model.*
 
+*Note: For this POC, I used Azure CLI Authentication via az login. It’s a secure 'Zero-Secret' approach for local development because Terraform inherits the permissions of my active CLI session.
+However, for a Production Environment, I would move away from personal logins and use a Service Principal with the Principle of Least Privilege. I would store those credentials as GitHub Actions Secrets or Azure Key Vault secrets, injecting them into the CI/CD pipeline as environment variables (ARM_CLIENT_ID, ARM_CLIENT_SECRET, etc.) to ensure a fully automated and secure deployment.*
 ### Step 3: Seed Source Data
 1.  **Azure SQL:**
     - Navigate to the **Azure SQL Database** in the portal.
@@ -104,7 +111,7 @@ To ensure security, we avoid hardcoding API keys in notebooks.
     # Using Databricks CLI
     databricks secrets put --scope nextgen-scope --key openai-key
     ```
-    *Interview Tip: Explain how this integration with Azure Key Vault prevents sensitive data leakage.*
+    Note: This integration with Azure Key Vault prevents sensitive data leakage.*
 
 ### Step 5: Orchestrate via Azure Data Factory
 1.  **Linked Services:** Create Linked Services for:
