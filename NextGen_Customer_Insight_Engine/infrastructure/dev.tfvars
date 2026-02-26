@@ -1,5 +1,5 @@
 environment         = "dev"
-storage_replication = "LRS"           # Cheapest storage
-sql_sku             = "GP_S_Gen5_1"    # Serverless (Auto-pausing)
-openai_model_name   = "gpt-4o-mini"   # Cheaper LLM
-sql_admin_password  = "DevPass1234!"
+storage_replication = "LRS"
+sql_sku             = "GP_S_Gen5_1"  # Serverless (Cheapest)
+sql_admin_password  = "AzureTrial123!"
+openai_model_name   = "gpt-4o-mini" # High speed, low cost
