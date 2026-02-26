@@ -1,0 +1,3 @@
+{"cust_id": "C-101", "Priority": "High", "Region": "Philadelphia", "Plan": "Xfinity Gigabit"}
+{"cust_id": "C-102", "Priority": "Low", "Region": "New Jersey", "Plan": "Xfinity 200Mbps"}
+{"cust_id": "C-103", "Priority": "Medium", "Region": "Pittsburgh", "Plan": "Xfinity 400Mbps"}
