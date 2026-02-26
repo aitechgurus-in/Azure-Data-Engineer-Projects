@@ -1,37 +1,7 @@
-variable "project_name" {
-  type    = string
-  default = "nextgen"
-}
-
-variable "environment" {
-  type        = string
-  description = "The environment (dev or prod)"
-}
-
-variable "location" {
-  type    = string
-  default = "East US"
-}
-
-# Storage Configuration
-variable "storage_replication" {
-  type        = string
-  description = "LRS for dev, GRS for prod"
-}
-
-# SQL Configuration
-variable "sql_sku" {
-  type        = string
-  description = "SKU for SQL Database"
-}
-
-variable "sql_admin_password" {
-  type      = string
-  sensitive = true
-}
-
-# OpenAI Configuration
-variable "openai_model_name" {
-  type    = string
-  default = "gpt-4o-mini"
-}
+variable "project_name" { default = "nextgen" }
+variable "environment" {}
+variable "location" { default = "East US" }
+variable "storage_replication" { default = "LRS" }
+variable "sql_sku" { default = "GP_S_Gen5_1" }
+variable "sql_admin_password" { sensitive = true }
+variable "openai_model_name" { default = "gpt-4o-mini" }
