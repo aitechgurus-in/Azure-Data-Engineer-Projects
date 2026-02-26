@@ -1,4 +1,4 @@
 environment         = "dev"
-location            = "eastus2"
+location            = "westeurope"
 storage_replication = "LRS"
 project_name        = "nextgen"
