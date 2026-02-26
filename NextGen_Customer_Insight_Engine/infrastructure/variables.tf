@@ -1,6 +1,15 @@
-variable "project_name" { default = "nextgen" }
-variable "environment" {}
-variable "location" { default = "East US" }
-variable "storage_replication" { default = "LRS" }
-variable "sql_sku" { default = "GP_S_Gen5_1" }
-variable "sql_admin_password" { sensitive = true }
+variable "project_name" { 
+  default = "nextgen" 
+}
+
+variable "environment" {
+  type = string
+}
+
+variable "location" { 
+  default = "eastus2" # Suggested to use eastus2 as it often has better trial availability
+}
+
+variable "storage_replication" { 
+  default = "LRS" 
+}
