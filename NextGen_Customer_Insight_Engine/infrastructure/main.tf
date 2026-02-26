@@ -48,7 +48,7 @@ resource "azurerm_mssql_database" "db" {
   min_capacity                = 0.5
 }
 
-# Databricks & OpenAI
+# Databricks
 resource "azurerm_databricks_workspace" "dbx" {
   name                = "dbx-${local.name_suffix}"
   resource_group_name = azurerm_resource_group.rg.name
@@ -56,26 +56,21 @@ resource "azurerm_databricks_workspace" "dbx" {
   sku                 = "premium"
 }
 
-resource "azurerm_cognitive_account" "openai" {
-  name                = "oai-${local.name_suffix}"
+# --- AZURE AI LANGUAGE SERVICE (Instant Access) ---
+resource "azurerm_cognitive_account" "language_svc" {
+  name                = "aisvc-${local.name_suffix}"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
-  kind                = "OpenAI"
-  sku_name            = "S0"
+  kind                = "TextAnalytics" 
+  sku_name            = "S" # Standard tier
 }
 
-resource "azurerm_cognitive_deployment" "gpt" {
-  name                 = var.openai_model_name
-  cognitive_account_id = azurerm_cognitive_account.openai.id
-  
-  model {
-    format  = "OpenAI"
-    name    = var.openai_model_name
-    version = "2024-07-18"
-  }
+# --- OUTPUTS ---
+output "ai_endpoint" {
+  value = azurerm_cognitive_account.language_svc.endpoint
+}
 
-  sku {
-    name     = "Standard"
-    capacity = 10
-  }
+output "ai_primary_key" {
+  value     = azurerm_cognitive_account.language_svc.primary_access_key
+  sensitive = true
 }
