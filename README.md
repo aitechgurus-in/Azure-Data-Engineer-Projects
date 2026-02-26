@@ -6,7 +6,7 @@ This repository contains a collection of end-to-end data engineering projects de
 
 | Project Name | Description |
 | :--- | :--- |
-| [**NextGen Customer Insight Engine**](./NextGen%20Customer%20Insight%20Engine%3A%20End-to-End%20GenAI%20Data%20Pipeline) | An end-to-end GenAI pipeline using ADF, Databricks, and Azure OpenAI to analyze customer chat logs and support tickets. |
+| [**NextGen Customer Insight Engine**](./NextGen_Customer_Insight_Engine_End-to-End_GenAI_Data_Pipeline) | An end-to-end GenAI pipeline using ADF, Databricks, and Azure OpenAI to analyze customer chat logs and support tickets. |
 | **Project 2 (In Progress)** | Upcoming project focusing on real-time stream processing. |
 
 
