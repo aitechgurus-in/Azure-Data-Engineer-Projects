@@ -1,5 +1,3 @@
-# Azure-Data-Engineer-Projects
-
 # NextGen Customer Insight Engine: End-to-End GenAI Data Pipeline
 
 ## 🚀 Project Overview
