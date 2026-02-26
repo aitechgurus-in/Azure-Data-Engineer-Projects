@@ -134,6 +134,7 @@ To ensure security, we avoid hardcoding API keys in notebooks.
 To avoid consuming your $200 trial credits after testing:
 ```bash
 terraform destroy -var-file="dev.tfvars"
+```
 ---
 
 ## 📈 Business Impact (POC Results)
@@ -141,6 +142,14 @@ terraform destroy -var-file="dev.tfvars"
 - **Accuracy:** The GPT-4o-mini classification achieved a **92% match** compared to manual human labels in the testing set.
 - **Scalability:** The pipeline is designed to scale to **10M+ chats/day** by increasing the Databricks worker nodes.
 - **Proactive Retention:** Identified "At-Risk" customers **48 hours faster** than traditional keyword-based reporting.
+
+## Talking Points
+- Security: "I implemented PII masking in the Silver layer to ensure no customer emails were sent to the OpenAI API."
+- Cost: "I used the GPT-4o-mini model and SQL Serverless, making the entire POC cost less than $1 to run."
+- Scale: "By using Pandas UDFs, I optimized the LLM calls for batch processing, making the pipeline 40% faster than row-by-row API calls."
+- DevOps:
+    - "The project is fully variable-driven via Terraform, allowing us to spin up identical Dev and Prod environments in minutes."
+    - "Used a tfvars-based approach to maintain environmental parity. This ensures that the code running in Production is the exact same logic we tested in Development, just with different performance tiers. For example, in Dev, I use Serverless SQL and LRS Storage to keep costs low, while in Prod, I switch to GRS Storage for durability and Provisioned SQL for consistent performance."
 
 ---
 
