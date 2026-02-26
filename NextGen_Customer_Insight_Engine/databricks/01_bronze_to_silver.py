@@ -1,13 +1,14 @@
-from pyspark.sql.functions import col, regexp_replace
+from pyspark.sql.functions import col, regexp_replace, current_timestamp
 
-# Read Raw JSON Chats from Bronze
-raw_df = spark.read.json("abfss://bronze@stnextgen.dfs.core.windows.net/chats/*.json")
+# Read raw chats from Landing Zone
+df = spark.read.json("abfss://external-source@stnextgendev.dfs.core.windows.net/chats.json")
 
-# Masking emails for PII compliance before sending to LLM
-cleaned_df = raw_df.withColumn(
+# Mask PII (Emails) for Security Compliance
+# Interview Tip: Explain you redact PII before sending data to LLMs
+silver_df = df.withColumn(
     "chat_masked", 
     regexp_replace(col("chat_history"), r"[\w\.-]+@[\w\.-]+", "[REDACTED_EMAIL]")
-)
+).withColumn("processed_at", current_timestamp())
 
-# Save to Silver Layer
-cleaned_df.write.format("delta").mode("overwrite").save("abfss://silver@stnextgen.dfs.core.windows.net/chats_cleaned")
+# Write to Silver Delta Table
+silver_df.write.format("delta").mode("overwrite").save("abfss://silver@stnextgendev.dfs.core.windows.net/chat_cleaned")
