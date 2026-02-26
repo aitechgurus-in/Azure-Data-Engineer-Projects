@@ -26,7 +26,10 @@ NextGen_Customer_Insight_Engine/
 ├── README.md                   # Project Documentation
 ├── infrastructure/             # Infrastructure as Code (IaC)
 │   ├── main.tf                 # Resources: ADLS, SQL, Databricks, OpenAI
-│   └── variables.tf            # Dev/Prod toggle & credentials
+│   └── variables.tf            # var file
+│   └── dev.tfvars              # Dev vars
+│   └── prod.tfvars             # Prod vars
+│   └── outputs.tf
 ├── databricks/                 # Data Processing (PySpark)
 │   ├── 01_bronze_to_silver.py  # PII Masking & Schema Cleanup
 │   └── 02_silver_to_gold_ai.py # GenAI Enrichment (Batch Processing)
