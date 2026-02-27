@@ -73,6 +73,58 @@ Implemented a "PII-First" Redaction Policy. Sensitive customer identifiers (emai
 Follow these steps to deploy the end-to-end pipeline on an Azure Trial account.
 
 ### Step 1: Deploy Infrastructure
+#### Manual Approach
+(i): Create the Storage Account (The "Data Lake")
+
+-    Search for "Storage accounts" in the Azure Portal. Click Create.
+  ```
+    Basics:
+    Resource Group: Create new rg-nextgen-demo.
+    Storage Account Name: stnextgeninsight + [some random numbers].
+    Region: East US 2 or West Europe.
+    Advanced (CRITICAL STEP):
+  ```
+-    Scroll down to Hierarchical namespace.
+  ```
+    CHECK THE BOX: Enable hierarchical namespace. (This makes it ADLS Gen2 so abfss works).
+  ```
+-    Click Review + create -> Create.
+
+
+(ii):  Set up Containers and Data
+-    Once the storage account is created, go to Containers.
+-    Create 4 Containers: external-source, bronze, silver, gold.
+-    Go into external-source and Upload two files (sample_chats.json and ticket_metadata.json).
+
+(iii):  Create the AI Service
+-   Search for "Language" in the Portal. Click Create.
+  ```
+    Select "Language Service".
+    Basics:
+    Resource Group: rg-nextgen-demo.
+    Region: Same as your storage.
+    Name: aisvc-nextgen.
+    Pricing Tier: S (Standard).
+  ```
+-   Once created, go to Keys and Endpoint and copy Key 1 and the Endpoint.
+
+(iv):  Databricks Setup
+-   Create an Azure Databricks workspace in the portal.
+  ```
+    Name: dbx-nextgen-insights-dev
+    Workspace Type: Hybrid
+  ```
+-   Launch Workspace. Create a Compute Cluster:
+  ```
+    Mode: Single Node.
+    Runtime: 14.3 LTS. Unselect Photon acceleration.
+  ```
+-   Spark Config (Advanced): Paste this (use your key from Storage -> Access Keys):
+  ```
+    fs.azure.account.key.<YOUR_STORAGE_NAME>.dfs.core.windows.net <YOUR_KEY>
+  ```
+
+####  terraform Approach
 * Navigate to infrastructure/ and authenticate via Azure CLI (az login).
 * Run:
 ```bash
@@ -80,6 +132,8 @@ terraform init
 terraform apply -var-file="dev.tfvars"
 ```
 Note the storage_account_name and ai_primary_key from the outputs.
+
+
 
 ### Step 2: Seed the Landing Zone
 * Upload data/sample_chats.json and data/ticket_metadata.json to the external-source container in ADLS Gen2.
