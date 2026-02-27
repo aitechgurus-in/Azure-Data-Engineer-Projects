@@ -180,3 +180,79 @@ To avoid consuming Azure credits after the demo:
 terraform destroy -var-file="dev.tfvars"
 ```
 ---
+# Project FAQ:
+
+# 🧠 Interview & Operations Guide: NextGen Insight Engine
+
+This document outlines the professional engineering logic, production support patterns, and architectural decisions made for this project. Use this as a reference for interview discussions regarding **Day-to-Day activities**, **Production support**, and **Architectural tradeoffs**.
+
+---
+
+## 🏗️ 1. Environmental Strategy: Dev vs. Production
+
+In a professional enterprise environment (e.g., Telecom or Banking), we maintain strict environmental parity while optimizing for cost and scale.
+
+| Feature             | Development (Dev / POC)        | Production (Prod)                          |
+|:--------------------|:-------------------------------|:-------------------------------------------|
+| **Storage**         | LRS (Locally Redundant)        | GRS (Geo-Redundant) for Disaster Recovery  |
+| **Compute**         | Single-Node (Standard_DS3_v2)  | Multi-Node w/ **Photon** & Auto-scaling    |
+| **Security**        | Access Keys / CLI Login        | **Managed Identities** & Federated Trust    |
+| **Orchestration**   | Manual / Debug triggers        | Event-based (Blob Trigger) via ADF         |
+| **AI Enrichment**   | Task-Specific (Language Svc)   | GPT-4o (High TPM) / Fine-tuned models      |
+| **Deployment**      | Manual Terraform Apply         | **CI/CD Pipelines** (GitHub Actions/ADO)   |
+
+---
+
+## 📅 2. Day-to-Day Activities
+*Typical workflow as an Azure Data Engineer on this project:*
+
+*   **09:00 - 09:30 | Monitoring & Health Checks:** Review **ADF Monitoring** and **Log Analytics**. Check for failed pipelines or "Long Running" Spark jobs from overnight batches.
+*   **09:30 - 10:00 | Daily Standup:** Discuss blockers. For example, reporting a **Schema Drift** from the upstream chat-source team that impacted the Silver layer.
+*   **10:00 - 13:00 | Core Development:** Implementing PySpark logic or Terraform modules. (e.g., Optimizing **Pandas UDFs** to handle higher AI request throughput).
+*   **13:00 - 15:00 | Peer Review & CI/CD:** Reviewing GitHub Pull Requests (PRs). Ensuring Spark code follows the **"No-Shuffle"** principle and includes proper error handling.
+*   **15:00 - 17:00 | Optimization:** Analyzing **Spark UI** to identify skewed partitions. Implementing **Z-Ordering** or **Liquid Clustering** to improve Gold layer query performance.
+
+---
+
+## 🛠️ 3. Why Databricks over ADF for Transformation?
+*Question: "Why didn't you use ADF Mapping Data Flows for all transformations?"*
+
+**Answer:** We follow the **"Orchestrator vs. Engine"** pattern. ADF is our Project Manager (Orchestrator); Databricks is our Lead Engineer (Engine).
+1.  **AI Integration:** ADF cannot natively handle complex batching, custom SDKs, or exponential backoff for AI APIs.
+2.  **PII Masking:** Complex Regex and conditional masking are significantly more performant in PySpark than in ADF graphical expressions.
+3.  **Delta Optimization:** Databricks allows us to run `OPTIMIZE` and `VACUUM` commands directly within the pipeline, which ADF cannot do.
+4.  **Unit Testing:** Databricks notebooks/Python files are far easier to unit test and version control in GitHub compared to ADF’s large JSON definitions.
+
+---
+
+## 🚨 4. Production Issues & Troubleshooting ("War Stories")
+
+### Scenario A: API Throttling (Error 429)
+*   **Issue:** During peak chat volume, the AI service hit rate limits.
+*   **Solution:** Implemented **Exponential Backoff** logic in the Python UDF and moved to a **Vectorized Batching** pattern (10 records per call) to reduce the total number of API requests.
+
+### Scenario B: Data Skew
+*   **Issue:** One specific region (e.g., Philadelphia) had 5x more data than others, causing "Straggler Tasks" in Spark.
+*   **Solution:** Applied **Salting** to the join key to redistribute the data across the cluster, reducing total job duration by 30%.
+
+### Scenario C: Schema Drift
+*   **Issue:** The upstream JSON source added nested objects that broke the standard `read.json` schema.
+*   **Solution:** Implemented **Schema Evolution** and used `cloudFiles` (Auto Loader) to move non-compliant records to a **Dead Letter Queue (DLQ)** for manual inspection.
+
+---
+
+## ❓ 5. Critical Cross-Questions & Answers
+
+**Q: How do you handle secrets like API Keys in Production?**  
+> "We never hardcode keys. We use **Azure Key Vault** integrated with **Databricks Secret Scopes**. At runtime, we use `dbutils.secrets.get()` so that sensitive credentials are never visible in the code or logs."
+
+**Q: Why use Pandas UDFs instead of standard Python UDFs?**  
+> "Standard Python UDFs process data row-by-row, which is slow. **Pandas UDFs (Vectorized UDFs)** utilize Apache Arrow to transfer data in blocks, allowing us to process batches of records simultaneously, which is essential for high-latency tasks like calling AI APIs."
+
+**Q: How do you ensure your AI results are accurate (Hallucinations)?**  
+> "By using the **Azure AI Language Service**, we leverage deterministic, task-specific models. For the summaries, we implement a **Confidence Score threshold**. Any record with a confidence score below 0.8 is flagged in the Gold layer for human-in-the-loop review."
+
+**Q: What is the benefit of Delta Lake Z-Ordering in your project?**  
+> "Our Gold table is queried by `Region` and `Priority`. By **Z-Ordering** on these columns, we enable **Data Skipping**. Spark skips irrelevant files entirely, reducing I/O and making our PowerBI dashboards run in sub-second time."
+
+---
