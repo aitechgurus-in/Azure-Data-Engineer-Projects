@@ -39,6 +39,7 @@ The objective of this project is to build a scalable and automated data pipeline
 1.  **Resource Group:** Create `rg-retail-project` to manage all cloud resources.
 2.  **Storage:** Provision **Azure Data Lake Storage (ADLS Gen2)** with **Hierarchical Namespace** enabled.
 3.  **Database:** Setup **Azure SQL Database** (using Serverless/Basic tier for cost optimization).
+    * Resource Group: rg-retail-project
     * Database name: pocdatabase
     * Server name: pocserver999
     * Location: (US) West US 2
@@ -47,7 +48,18 @@ The objective of this project is to build a scalable and automated data pipeline
     * Workload environment: Development
     * Compute + storage(Configure database): Basic
     * Backup storage redundancy: Locally-redundant backup storage
-
+    * Networking: Public endpoint
+    * Allow Azure services and resources to access this server: Yes
+    * Add current client IP address: yes
+    * Security: Enable Microsoft Defender for SQL: Start free trial
+    * Additional settings: Use existing data: Sample
+    > [!NOTE]
+    > To create it using Terraform.
+    ```bash
+        cd infrastructure/
+        terraform init
+        terraform apply -var-file="dev.tfvars"
+    ```
 5.  **Compute:** Provision an **Azure Databricks** Premium Workspace for advanced security and Unity Catalog features.
 6.  **Orchestration:** Setup **Azure Data Factory (ADF)** to manage the workflow.
 
