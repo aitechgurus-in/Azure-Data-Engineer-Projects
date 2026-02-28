@@ -53,14 +53,14 @@ The objective of this project is to build a scalable and automated data pipeline
     * Add current client IP address: yes
     * Security: Enable Microsoft Defender for SQL: Start free trial
     * Additional settings: Use existing data: Sample
- > [!NOTE]
-  > To create it using Terraform.
-    ```bash
-        az login --use-device-code
-        cd infrastructure/
-        terraform init
-        terraform apply -var-file="dev.tfvars"
-    ```
+  > [!NOTE]
+  > **To create it using Terraform:**
+  > ```bash
+  > az login --use-device-code
+  > cd infrastructure/
+  > terraform init
+  > terraform apply -var-file="dev.tfvars"
+  > ```
 5.  **Compute:** Provision an **Azure Databricks** Premium Workspace for advanced security and Unity Catalog features.
 6.  **Orchestration:** Setup **Azure Data Factory (ADF)** to manage the workflow.
 
