@@ -1,11 +1,13 @@
+-- 1. Products Table (Added NOT NULL)
 CREATE TABLE products (
     product_id INT PRIMARY KEY,
-    product_name VARCHAR(100),
-    category VARCHAR(50),
-    price DECIMAL(10,2)
+    product_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    price DECIMAL(10,2) NOT NULL
 );
 
-INSERT INTO products VALUES 
+-- Optimized Multi-row Insert
+INSERT INTO products (product_id, product_name, category, price) VALUES 
 (1, 'Wireless Mouse', 'Electronics', 799.99),
 (2, 'Bluetooth Speaker', 'Electronics', 1299.49),
 (3, 'Yoga Mat', 'Fitness', 499.00),
@@ -17,62 +19,61 @@ INSERT INTO products VALUES
 (9, 'Dumbbell Set', 'Fitness', 1999.00),
 (10, 'Pen Drive 32GB', 'Electronics', 599.00);
 
-
--- Stores Table
+-- 2. Stores Table (Added NOT NULL)
 CREATE TABLE stores (
     store_id INT PRIMARY KEY,
-    store_name VARCHAR(100),
-    location VARCHAR(100)
+    store_name VARCHAR(100) NOT NULL,
+    location VARCHAR(100) NOT NULL
 );
 
-INSERT INTO stores VALUES 
+INSERT INTO stores (store_id, store_name, location) VALUES 
 (1, 'City Mall Store', 'Mumbai'),
 (2, 'High Street Store', 'Delhi'),
 (3, 'Tech World Outlet', 'Bangalore'),
 (4, 'Downtown Mini Store', 'Pune'),
 (5, 'Mega Plaza', 'Chennai');
 
-
--- Transactions Table
+-- 3. Transactions Table (Added Identity and Constraints)
 CREATE TABLE transactions (
-    transaction_id INT PRIMARY KEY,
-    customer_id INT,
-    product_id INT,
-    store_id INT,
-    quantity INT,
-    transaction_date DATE,
+    transaction_id INT IDENTITY(1,1) PRIMARY KEY, -- Auto-increments
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    store_id INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0), -- Business logic check
+    transaction_date DATE NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (store_id) REFERENCES stores(store_id)
 );
 
-
-INSERT INTO transactions VALUES (1, 127, 8, 4, 4, '2025-03-31');
-INSERT INTO transactions VALUES (2, 105, 3, 4, 5, '2024-11-12');
-INSERT INTO transactions VALUES (3, 116, 2, 2, 3, '2025-05-01');
-INSERT INTO transactions VALUES (4, 120, 8, 1, 1, '2024-11-02');
-INSERT INTO transactions VALUES (5, 105, 5, 2, 1, '2025-03-17');
-INSERT INTO transactions VALUES (6, 110, 7, 3, 5, '2025-01-04');
-INSERT INTO transactions VALUES (7, 110, 7, 2, 5, '2025-01-01');
-INSERT INTO transactions VALUES (8, 126, 7, 5, 2, '2025-06-08');
-INSERT INTO transactions VALUES (9, 123, 1, 3, 2, '2024-10-08');
-INSERT INTO transactions VALUES (10, 124, 2, 2, 5, '2024-08-27');
-INSERT INTO transactions VALUES (11, 102, 1, 3, 2, '2024-08-11');
-INSERT INTO transactions VALUES (12, 108, 5, 1, 4, '2025-05-26');
-INSERT INTO transactions VALUES (13, 104, 3, 3, 4, '2025-05-04');
-INSERT INTO transactions VALUES (14, 120, 1, 4, 5, '2024-07-17');
-INSERT INTO transactions VALUES (15, 121, 6, 5, 5, '2025-05-19');
-INSERT INTO transactions VALUES (16, 118, 6, 2, 4, '2024-11-29');
-INSERT INTO transactions VALUES (17, 109, 8, 5, 5, '2024-07-10');
-INSERT INTO transactions VALUES (18, 103, 1, 4, 3, '2024-09-05');
-INSERT INTO transactions VALUES (19, 116, 8, 4, 4, '2024-07-14');
-INSERT INTO transactions VALUES (20, 130, 5, 1, 2, '2024-07-30');
-INSERT INTO transactions VALUES (21, 105, 1, 3, 5, '2024-10-02');
-INSERT INTO transactions VALUES (22, 107, 9, 3, 4, '2024-11-16');
-INSERT INTO transactions VALUES (23, 122, 9, 4, 2, '2025-04-30');
-INSERT INTO transactions VALUES (24, 125, 1, 5, 1, '2024-07-14');
-INSERT INTO transactions VALUES (25, 116, 8, 4, 5, '2024-12-13');
-INSERT INTO transactions VALUES (26, 126, 6, 2, 2, '2024-09-21');
-INSERT INTO transactions VALUES (27, 127, 8, 1, 1, '2024-10-10');
-INSERT INTO transactions VALUES (28, 101, 7, 5, 3, '2024-11-15');
-INSERT INTO transactions VALUES (29, 119, 9, 4, 2, '2025-06-03');
-INSERT INTO transactions VALUES (30, 116, 8, 4, 5, '2025-03-16');
+-- Note: Since transaction_id is now IDENTITY, we don't pass the first number
+INSERT INTO transactions (customer_id, product_id, store_id, quantity, transaction_date) VALUES 
+(127, 8, 4, 4, '2025-03-31'),
+(105, 3, 4, 5, '2024-11-12'),
+(116, 2, 2, 3, '2025-05-01'),
+(120, 8, 1, 1, '2024-11-02'),
+(105, 5, 2, 1, '2025-03-17'),
+(110, 7, 3, 5, '2025-01-04'),
+(110, 7, 2, 5, '2025-01-01'),
+(126, 7, 5, 2, '2025-06-08'),
+(123, 1, 3, 2, '2024-10-08'),
+(124, 2, 2, 5, '2024-08-27'),
+(102, 1, 3, 2, '2024-08-11'),
+(108, 5, 1, 4, '2025-05-26'),
+(104, 3, 3, 4, '2025-05-04'),
+(120, 1, 4, 5, '2024-07-17'),
+(121, 6, 5, 5, '2025-05-19'),
+(118, 6, 2, 4, '2024-11-29'),
+(109, 8, 5, 5, '2024-07-10'),
+(103, 1, 4, 3, '2024-09-05'),
+(116, 8, 4, 4, '2024-07-14'),
+(130, 5, 1, 2, '2024-07-30'),
+(105, 1, 3, 5, '2024-10-02'),
+(107, 9, 3, 4, '2024-11-16'),
+(122, 9, 4, 2, '2025-04-30'),
+(125, 1, 5, 1, '2024-07-14'),
+(116, 8, 4, 5, '2024-12-13'),
+(126, 6, 2, 2, '2024-09-21'),
+(127, 8, 1, 1, '2024-10-10'),
+(101, 7, 5, 3, '2024-11-15'),
+(119, 9, 4, 2, '2025-06-03'),
+(116, 8, 4, 5, '2025-03-16');
