@@ -39,8 +39,17 @@ The objective of this project is to build a scalable and automated data pipeline
 1.  **Resource Group:** Create `rg-retail-project` to manage all cloud resources.
 2.  **Storage:** Provision **Azure Data Lake Storage (ADLS Gen2)** with **Hierarchical Namespace** enabled.
 3.  **Database:** Setup **Azure SQL Database** (using Serverless/Basic tier for cost optimization).
-4.  **Compute:** Provision an **Azure Databricks** Premium Workspace for advanced security and Unity Catalog features.
-5.  **Orchestration:** Setup **Azure Data Factory (ADF)** to manage the workflow.
+    * Database name: pocdatabase
+    * Server name: pocserver999
+    * Location: (US) West US 2
+    * Authentication method: Use SQL authentication
+    * server admin login: adminuser / India@123
+    * Workload environment: Development
+    * Compute + storage(Configure database): Basic
+    * Backup storage redundancy: Locally-redundant backup storage
+
+5.  **Compute:** Provision an **Azure Databricks** Premium Workspace for advanced security and Unity Catalog features.
+6.  **Orchestration:** Setup **Azure Data Factory (ADF)** to manage the workflow.
 
 ### Phase 2: Source Data Preparation
 1.  Execute DDL scripts in the Azure SQL Query Editor to create the `Products`, `Stores`, and `Transactions` tables.
