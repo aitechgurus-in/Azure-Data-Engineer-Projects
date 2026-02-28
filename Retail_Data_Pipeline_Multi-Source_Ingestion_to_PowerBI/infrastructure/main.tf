@@ -7,7 +7,7 @@ data "http" "my_public_ip" {
   url = "https://api4.ipify.org"
 }
 
-# Used to generate a unique suffix for the storage account name
+# Used to generate a unique suffix for Storage and ADF names
 resource "random_string" "suffix" {
   length  = 6
   special = false
@@ -69,19 +69,13 @@ resource "azurerm_mssql_server_security_alert_policy" "defender" {
   state               = "Enabled"
 }
 
-# =========================================================================
-# NEW ADDITIONS: DATA LAKE STORAGE GEN2
-# =========================================================================
-
 # 7. Storage Account (ADLS Gen2)
 resource "azurerm_storage_account" "adls" {
-  name                     = "pocstorage${random_string.suffix.result}" # Ensures global uniqueness
+  name                     = "pocstorage${random_string.suffix.result}" 
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
-  
-  # This enables the Hierarchical Namespace (ADLS Gen2)
   is_hns_enabled           = true 
 
   tags = {
@@ -96,7 +90,6 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "retail" {
 }
 
 # 9. Directories: Silver and Gold
-# Note: "resource" attribute set to "directory"
 resource "azurerm_storage_data_lake_gen2_path" "base_folders" {
   for_each           = toset(["silver", "gold"])
   path               = each.key
@@ -106,11 +99,30 @@ resource "azurerm_storage_data_lake_gen2_path" "base_folders" {
 }
 
 # 10. Directories: Bronze Subfolders
-# Creating these paths will automatically create the parent "bronze" folder
 resource "azurerm_storage_data_lake_gen2_path" "bronze_subfolders" {
   for_each           = toset(["customer", "product", "store", "transaction"])
   path               = "bronze/${each.key}"
   filesystem_name    = azurerm_storage_data_lake_gen2_filesystem.retail.name
   storage_account_id = azurerm_storage_account.adls.id
   resource           = "directory"
+}
+
+# =========================================================================
+# NEW ADDITIONS: AZURE DATA FACTORY
+# =========================================================================
+
+# 11. Azure Data Factory
+resource "azurerm_data_factory" "adf" {
+  name                = "pocadf${random_string.suffix.result}" # Ensures uniqueness
+  location            = "West US 2"                            # Explicitly requested region
+  resource_group_name = azurerm_resource_group.rg.name
+
+  # Enabling Managed Identity is best practice for connecting ADF to ADLS/SQL later
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = {
+    environment = var.workload_env
+  }
 }
