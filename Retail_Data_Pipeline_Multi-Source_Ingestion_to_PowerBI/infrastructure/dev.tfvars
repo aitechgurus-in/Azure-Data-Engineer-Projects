@@ -1,0 +1,6 @@
+environment       = "dev"
+sql_server_name   = "pocserver999"
+database_name     = "pocdatabase"
+sql_sku           = "Basic"
+backup_redundancy = "LRS"
+admin_password    = "India@123"
