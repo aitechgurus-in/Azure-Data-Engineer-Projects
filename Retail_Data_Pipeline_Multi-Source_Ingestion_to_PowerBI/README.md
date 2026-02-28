@@ -65,8 +65,13 @@ The objective of this project is to build a scalable and automated data pipeline
   > terraform init
   > terraform apply -var-file="dev.tfvars"
   > ```
-5.  **Compute:** Provision an **Azure Databricks** Premium Workspace for advanced security and Unity Catalog features.
-6.  **Orchestration:** Setup **Azure Data Factory (ADF)** to manage the workflow.
+5.  **Orchestration:** Setup **Azure Data Factory (ADF)** to manage the workflow.
+    * Resource Group: rg-retail-project
+    * Instance Details
+        -    Name: pocadf (unique)
+        -    Region: : (US) West US 2
+6.  **Compute:** Provision an **Azure Databricks** Premium Workspace for advanced security and Unity Catalog features.
+7.  
 
 ### Phase 2: Source Data Preparation
 1.  Execute DDL scripts in the Azure SQL Query Editor to create the `Products`, `Stores`, and `Transactions` tables.
