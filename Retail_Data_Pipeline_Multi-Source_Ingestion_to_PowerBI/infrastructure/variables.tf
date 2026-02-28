@@ -1,29 +1,21 @@
-variable "project_name" {
-  type    = string
-  default = "retail-project"
-}
-
-variable "environment" {
-  type        = string
-  description = "dev or prod"
+variable "resource_group_name" {
+  type = string
 }
 
 variable "location" {
-  type    = string
-  default = "West US 2"
+  type = string
 }
 
-variable "sql_server_name" {
-  type    = string
+variable "server_name" {
+  type = string
 }
 
 variable "database_name" {
-  type    = string
+  type = string
 }
 
 variable "admin_username" {
-  type    = string
-  default = "adminuser"
+  type = string
 }
 
 variable "admin_password" {
@@ -31,12 +23,6 @@ variable "admin_password" {
   sensitive = true
 }
 
-variable "sql_sku" {
-  type        = string
-  description = "Basic, GP_S_Gen5_1, etc."
-}
-
-variable "backup_redundancy" {
-  type        = string
-  description = "LRS, GRS, or ZRS"
+variable "workload_env" {
+  type = string
 }
