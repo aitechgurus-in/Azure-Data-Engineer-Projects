@@ -1,0 +1,13 @@
+# Terraform: Ignore directories and files anywhere in the repository
+**/.terraform/
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.backup
+**/*.tfstate.temp
+
+# Also ignore all variable files (which contain passwords/secrets) anywhere in the repo
+**/*.tfvars
+**/*.tfvars.json
+
+# Ignore crash logs
+**/crash.log
