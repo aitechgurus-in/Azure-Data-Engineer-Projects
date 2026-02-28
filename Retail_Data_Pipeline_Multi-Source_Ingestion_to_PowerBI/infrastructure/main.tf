@@ -31,7 +31,7 @@ resource "azurerm_mssql_database" "sql_db" {
   collation      = "SQL_Latin1_General_CP1_CI_AS"
   sku_name       = "Basic" 
   sample_name    = "AdventureWorksLT"
-  storage_account_type = "LRS"
+  storage_account_type = "Local"
 
   tags = {
     environment = var.workload_env
