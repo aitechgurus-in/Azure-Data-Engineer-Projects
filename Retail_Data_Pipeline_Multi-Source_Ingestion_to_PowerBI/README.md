@@ -75,8 +75,9 @@ The objective of this project is to build a scalable and automated data pipeline
 
 ### Phase 2: Source Data Preparation
 1.  Execute DDL scripts in the Azure SQL Query Editor to create the `Products`, `Stores`, and `Transactions` tables.
-2.  Populate the SQL tables with mock retail datasets.
-3.  Validate the REST API endpoint (GitHub-hosted JSON) for customer demographic data.
+    * Run data/script.sql
+3.  Populate the SQL tables with mock retail datasets.
+4.  Validate the REST API endpoint (GitHub-hosted JSON) for customer demographic data.
 
 ### Phase 3: Ingestion (ADF)
 1.  **Linked Services:** Establish secure connections to Azure SQL DB and ADLS Gen2.
