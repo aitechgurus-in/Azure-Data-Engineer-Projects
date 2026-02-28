@@ -104,7 +104,17 @@ The objective of this project is to build a scalable and automated data pipeline
             - Click on 'Sink' > Sink dataset > New > Azure Data Lake Storage Gen2 > Continue > Select format 'Parquet' > Continue > Linked service > Select above created linked service.
                  * File path: Select "Root folder/retail/bronze/store"           
     *   Create a **Copy Activity** for the REST API source.
+        - (i)Create Copy data activity - Name: customer
+            - Drag and Drop "Copy data" > Click on Source > Source dataset > New > Search with "http" > select HTTP > continue > Select JSON > Continue > Linked service > New
+                * Base URL: https://raw.githubusercontent.com/
+                * Authentication Type: Anonymous
+            - Test connection and create, then enter the Relative URL of the file data/customers.json and select ok.
+                * Relative URL: aitechgurus-in/Azure-Data-Engineer-Projects/refs/heads/main/Retail_Data_Pipeline_Multi-Source_Ingestion_to_PowerBI/data/customers.json
+            - Now Sink where you want to store the data. Click on 'Sink' > Sink dataset > New > Azure Data Lake Storage Gen2 > Continue > Select format 'Parquet' > Continue > Linked service > Select above created linked service.
+                 * File path: Select "Root folder/retail/bronze/customer" 
     *   Sink all raw data into the `retail/bronze/` directory in **Parquet** format.
+        - Click on Debug and check if data is stored in storage.
+    *   
 
 ### Phase 4: Transformation (Databricks)
 1.  **Mounting:** Securely mount the ADLS Gen2 container to the Databricks File System (DBFS) using `dbutils.fs.mount`.
