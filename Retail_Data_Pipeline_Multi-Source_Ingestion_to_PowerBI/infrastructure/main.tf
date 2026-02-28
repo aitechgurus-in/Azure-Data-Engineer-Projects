@@ -2,9 +2,10 @@ provider "azurerm" {
   features {}
 }
 
-# Auto-fetch your current public IP for the "Add current client IP" requirement
+# Adjusted: Using api4.ipify.org to FORCE an IPv4 address.
+# This prevents the "FirewallRuleNotIPv4Address" error on IPv6 enabled networks.
 data "http" "my_public_ip" {
-  url = "https://ifconfig.me/ip"
+  url = "https://api4.ipify.org"
 }
 
 # 1. Resource Group
@@ -31,6 +32,8 @@ resource "azurerm_mssql_database" "sql_db" {
   collation      = "SQL_Latin1_General_CP1_CI_AS"
   sku_name       = "Basic" 
   sample_name    = "AdventureWorksLT"
+  
+  # Adjusted: Set to "Local" to satisfy Terraform's requirement for LRS
   storage_account_type = "Local"
 
   tags = {
@@ -39,6 +42,7 @@ resource "azurerm_mssql_database" "sql_db" {
 }
 
 # 4. Networking: Allow Azure Services
+# (Internal Azure backbone connectivity for ADF/Databricks)
 resource "azurerm_mssql_firewall_rule" "allow_azure_services" {
   name             = "AllowAzureServices"
   server_id        = azurerm_mssql_server.sql_server.id
@@ -47,6 +51,7 @@ resource "azurerm_mssql_firewall_rule" "allow_azure_services" {
 }
 
 # 5. Networking: Add Current Client IP
+# (External connectivity for your local machine)
 resource "azurerm_mssql_firewall_rule" "client_ip" {
   name             = "ClientIPAddress"
   server_id        = azurerm_mssql_server.sql_server.id
