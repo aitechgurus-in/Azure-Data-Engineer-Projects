@@ -67,7 +67,7 @@ The objective of this project is to build a scalable and automated data pipeline
   > ```
 5.  **Orchestration:** Setup **Azure Data Factory (ADF)** to manage the workflow.
     * Resource Group: rg-retail-project
-    * Instance Details
+    * Provide Instance Details and create.
         -    Name: pocadf (unique)
         -    Region: : (US) West US 2
 6.  **Compute:** Provision an **Azure Databricks** Premium Workspace for advanced security and Unity Catalog features.
@@ -83,7 +83,26 @@ The objective of this project is to build a scalable and automated data pipeline
 1.  **Linked Services:** Establish secure connections to Azure SQL DB and ADLS Gen2.
 2.  **Datasets:** Define Parquet datasets for the landing zone (Bronze layer).
 3.  **Pipeline Orchestration:**
-    *   Create **Copy Activities** to migrate SQL tables to the Data Lake.
+    *   Create **Copy Activities** to migrate SQL tables to the Data Lake. Here, we are creating separate copy activities, but we can parameterize them into a single activity.
+        - Go to ADF > Author > Pipelines > New pipeline >  Move and transform >
+        - (i)Create Copy data activity - Name: transaction
+            - Drag and Drop "Copy data" > Click on Source > Source dataset > New > Search with "azure sql" > select Azure SQL Database > continue > Linked service > New
+           <img width="1220" height="857" alt="image" src="https://github.com/user-attachments/assets/ecb273b0-415f-412e-a7de-4265689983b2" />
+                * Azure subscription: select Azure subscription
+                * Server name: Select Server
+                * User name:
+                * Password:
+               - Test connection and create, then select table name 'dbo.transactions' and select ok.
+           - Now we have to sink the tables to the data lake (adf storage). Click on 'Sink' > Sink dataset > New > Azure Data Lake Storage Gen2 > Continue > Select format 'Parquet' > Continue > Linked service > New > Select Azure subscription and Storage account, then click on Create.
+                 * File path: Select "Root folder/retail/bronze/transaction"
+        - (ii)Create Copy data activity - Name: product
+            - Drag and Drop "Copy data" > Click on Source > Source dataset >  New > Search with "azure sql" > select Azure SQL Database > continue > Linked service > Select above created linked service. Select table name 'dbo.products' and select ok.
+            - Click on 'Sink' > Sink dataset > New > Azure Data Lake Storage Gen2 > Continue > Select format 'Parquet' > Continue > Linked service > Select above created linked service.
+                 * File path: Select "Root folder/retail/bronze/product"
+        - (iii)Create Copy data activity - Name: store
+            - Drag and Drop "Copy data" > Click on Source > Source dataset >  New > Search with "azure sql" > select Azure SQL Database > continue > Linked service > Select above created linked service. Select table name 'dbo.stores' and select ok.
+            - Click on 'Sink' > Sink dataset > New > Azure Data Lake Storage Gen2 > Continue > Select format 'Parquet' > Continue > Linked service > Select above created linked service.
+                 * File path: Select "Root folder/retail/bronze/store"           
     *   Create a **Copy Activity** for the REST API source.
     *   Sink all raw data into the `retail/bronze/` directory in **Parquet** format.
 
