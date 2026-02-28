@@ -3,9 +3,15 @@ provider "azurerm" {
 }
 
 # Adjusted: Using api4.ipify.org to FORCE an IPv4 address.
-# This prevents the "FirewallRuleNotIPv4Address" error on IPv6 enabled networks.
 data "http" "my_public_ip" {
   url = "https://api4.ipify.org"
+}
+
+# Used to generate a unique suffix for the storage account name
+resource "random_string" "suffix" {
+  length  = 6
+  special = false
+  upper   = false
 }
 
 # 1. Resource Group
@@ -33,7 +39,6 @@ resource "azurerm_mssql_database" "sql_db" {
   sku_name       = "Basic" 
   sample_name    = "AdventureWorksLT"
   
-  # Adjusted: Set to "Local" to satisfy Terraform's requirement for LRS
   storage_account_type = "Local"
 
   tags = {
@@ -42,7 +47,6 @@ resource "azurerm_mssql_database" "sql_db" {
 }
 
 # 4. Networking: Allow Azure Services
-# (Internal Azure backbone connectivity for ADF/Databricks)
 resource "azurerm_mssql_firewall_rule" "allow_azure_services" {
   name             = "AllowAzureServices"
   server_id        = azurerm_mssql_server.sql_server.id
@@ -51,7 +55,6 @@ resource "azurerm_mssql_firewall_rule" "allow_azure_services" {
 }
 
 # 5. Networking: Add Current Client IP
-# (External connectivity for your local machine)
 resource "azurerm_mssql_firewall_rule" "client_ip" {
   name             = "ClientIPAddress"
   server_id        = azurerm_mssql_server.sql_server.id
@@ -64,4 +67,50 @@ resource "azurerm_mssql_server_security_alert_policy" "defender" {
   resource_group_name = azurerm_resource_group.rg.name
   server_name         = azurerm_mssql_server.sql_server.name
   state               = "Enabled"
+}
+
+# =========================================================================
+# NEW ADDITIONS: DATA LAKE STORAGE GEN2
+# =========================================================================
+
+# 7. Storage Account (ADLS Gen2)
+resource "azurerm_storage_account" "adls" {
+  name                     = "pocstorage${random_string.suffix.result}" # Ensures global uniqueness
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  
+  # This enables the Hierarchical Namespace (ADLS Gen2)
+  is_hns_enabled           = true 
+
+  tags = {
+    environment = var.workload_env
+  }
+}
+
+# 8. Data Lake Filesystem (Container: retail)
+resource "azurerm_storage_data_lake_gen2_filesystem" "retail" {
+  name               = "retail"
+  storage_account_id = azurerm_storage_account.adls.id
+}
+
+# 9. Directories: Silver and Gold
+# Note: "resource" attribute set to "directory"
+resource "azurerm_storage_data_lake_gen2_path" "base_folders" {
+  for_each           = toset(["silver", "gold"])
+  path               = each.key
+  filesystem_name    = azurerm_storage_data_lake_gen2_filesystem.retail.name
+  storage_account_id = azurerm_storage_account.adls.id
+  resource           = "directory"
+}
+
+# 10. Directories: Bronze Subfolders
+# Creating these paths will automatically create the parent "bronze" folder
+resource "azurerm_storage_data_lake_gen2_path" "bronze_subfolders" {
+  for_each           = toset(["customer", "product", "store", "transaction"])
+  path               = "bronze/${each.key}"
+  filesystem_name    = azurerm_storage_data_lake_gen2_filesystem.retail.name
+  storage_account_id = azurerm_storage_account.adls.id
+  resource           = "directory"
 }
