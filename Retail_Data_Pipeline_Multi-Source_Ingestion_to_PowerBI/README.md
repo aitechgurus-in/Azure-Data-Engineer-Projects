@@ -38,7 +38,11 @@ The objective of this project is to build a scalable and automated data pipeline
 ### Phase 1: Environment Setup
 1.  **Resource Group:** Create `rg-retail-project` to manage all cloud resources.
 2.  **Storage:** Provision **Azure Data Lake Storage (ADLS Gen2)** with **Hierarchical Namespace** enabled.
-3.  **Database:** Setup **Azure SQL Database** (using Serverless/Basic tier for cost optimization).
+    * Resource Group: rg-retail-project 
+    * storage account name: pocstorage (unique)
+    * Advanced: Enable Hierarchical Namespace
+    * Create a container named retail, and create a directories bronze, sliver and gold. In bronze, create directories customer, product, store, transaction.
+4.  **Database:** Setup **Azure SQL Database** (using Serverless/Basic tier for cost optimization).
     * Resource Group: rg-retail-project
     * Database name: pocdatabase
     * Server name: pocserver999
