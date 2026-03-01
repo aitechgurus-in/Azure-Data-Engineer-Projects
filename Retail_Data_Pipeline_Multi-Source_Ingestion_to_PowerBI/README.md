@@ -146,3 +146,4 @@ The objective of this project is to build a scalable and automated data pipeline
 *   **Product Heatmap:** Insights into high-demand products and categories.
 
 ---
+Ref: https://www.youtube.com/watch?v=rmjVNPJhMXs&t=708s
